@@ -7,7 +7,7 @@ import lucidity
 import conf
 
 
-def transfer_img():
+def copy_save_img():
     img_template = lucidity.Template("rename", conf.rename_pattern, anchor=lucidity.Template.ANCHOR_END)
 
     name = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
@@ -23,5 +23,8 @@ def transfer_img():
         shutil.copy2(img, rename)
 
 
+def RenameError
+
+
 if __name__ == '__main__':
-    print(transfer_img())
+    print(copy_save_img())
