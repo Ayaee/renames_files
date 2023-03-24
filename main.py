@@ -21,10 +21,9 @@ def copy_before_save(rename):
     if rename.strip() == "":
         raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
 
-    folder_existing = existing(conf.root_img_before)
-    folder_not_empty = empty(conf.root_img_before)
+    folder_existing_not_empty = existing_not_empty(conf.root_img_before)
 
-    if folder_existing and folder_not_empty:
+    if folder_existing_not_empty:
         for img in conf.root_img_before.iterdir():
             img = str(img)
             template_data = img_template.parse(img)
@@ -35,22 +34,23 @@ def copy_before_save(rename):
             shutil.copy2(img, rename_path)
 
 
-def existing(folder):
-    if folder.exists():
+def check_existing_not_empty(folder):
+    """
+    Fonction permettant de vérifier si le dossier choisit par l'utilisateur est bien existant, est bien un dossier et non un fichier et contient bien des fichiers pour être renommés
 
-        return True
+    :param folder: Dossier contenant les fichiers à renommer
+    :return: True si le dossier est existant n'est pas un fichier et contient bien des fichiers, sinon raise une erreur selon la situation
+    """
+    if folder.exists() and not folder.is_file():
+        if not list(folder.iterdir()):
+
+            raise RenameFailure("Erreur: Le dossier dans lequel vous cherchez est vide.")
+
+        else:
+            return True
 
     else:
         raise RenameFailure(f"Erreur: Le dossier dans lequel les fichiers sont n'a pas été trouvé. {folder}")
-
-
-def empty(folder):
-    if not list(folder.iterdir()):
-
-        raise RenameFailure("Erreur: Le dossier dans lequel vous cherchez les fichiers est vide.")
-
-    else:
-        return True
 
 
 class RenameFailure(Exception):
