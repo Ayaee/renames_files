@@ -22,8 +22,9 @@ def copy_before_save(rename):
         raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
 
     folder_existing = existing(conf.root_img_before)
+    folder_not_empty = empty(conf.root_img_before)
 
-    if folder_existing:
+    if folder_existing and folder_not_empty:
         for img in conf.root_img_before.iterdir():
             img = str(img)
             template_data = img_template.parse(img)
@@ -35,7 +36,6 @@ def copy_before_save(rename):
 
 
 def existing(folder):
-
     if folder.exists():
 
         return True
@@ -45,8 +45,12 @@ def existing(folder):
 
 
 def empty(folder):
-    
-    pass
+    if not list(folder.iterdir()):
+
+        raise RenameFailure("Erreur: Le dossier dans lequel vous cherchez les fichiers est vide.")
+
+    else:
+        return True
 
 
 class RenameFailure(Exception):
@@ -54,8 +58,8 @@ class RenameFailure(Exception):
 
 
 if __name__ == '__main__':
-    # rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
-    # print(copy_before_save(rename))
+    rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
+    print(copy_before_save(rename))
 
-    folder = conf.root_img_before
-    print(empty(folder))
+    # folder = conf.root_img_before
+    # print(empty(folder))
