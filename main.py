@@ -1,11 +1,7 @@
-import shutil
-<<<<<<< Updated upstream
-import sys
-=======
 import pathlib as pl
->>>>>>> Stashed changes
-
 import lucidity
+import shutil
+
 
 import conf
 
