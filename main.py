@@ -1,5 +1,3 @@
-import os
-import pathlib as pl
 import shutil
 import sys
 
@@ -21,7 +19,7 @@ def copy_before_save(rename):
     if rename.strip() == "":
         raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
 
-    folder_existing_not_empty = existing_not_empty(conf.root_img_before)
+    folder_existing_not_empty = check_existing_not_empty(conf.root_img_before)
 
     if folder_existing_not_empty:
         for img in conf.root_img_before.iterdir():
