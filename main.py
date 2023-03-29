@@ -1,20 +1,50 @@
+import pathlib as pl
+import lucidity
 import shutil
 import sys
 
-import lucidity
 
 import conf
 
 
-def copy_before_save(rename):
+def function_choice():
     """
-    Fonction servant à renommer les fichiers dans 'before' pour les copier intégralement dans 'after'.
-    Cette fonction ne supprime pas le dossier 'before' et garde les deux dossiers.
+    Fonction principale servant à demander à l'utilisateur la manière dont il veut réaliser son renommage de fichiers ainsi que le nom qu'il désirera donner
+    La fonction appelle ensuite celle qui servira à réaliser le renommage
 
-    :return: La totalité des fichiers dans 'before' renommée comme désirée dans 'after'
+    :return: Le choix de l'utilisateur pour la procédure et le nouveau nom
     """
-    # rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
-    img_template = lucidity.Template("rename", conf.rename_pattern, anchor=lucidity.Template.ANCHOR_END)
+    choice = input("Comment voulez vous renomer vos fichier ? (Ecrivez votre choix\n"
+          "En faisant un  'save', en copiant les fichiers renommer dans un nouveau dossier et en conservant l'ancien ?\n"
+          "En faisant un 'check', en copiant les fichiers renommer dans un nouveau dossier et si le fichier est bien existant supprimer l'ancien, puis l'ancien dossier ?\n"
+          "En faisant un 'rename', en reonommant les fichiers directement dans le même dossier et écrasant les ancien ?\n")
+    print(choice)
+
+    list_choice = ["save", "check", "rename"]
+
+    if choice not in list_choice:
+        raise RenameFailure(f"Erreur: Le nom saisie ne correspond à aucun choix donné. Nom saisie : '{choice}'")
+
+    else:
+        rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
+
+    rename_files(choice, rename)
+
+
+def rename_files(choice, rename):
+    """
+    Fonction servant à réaliser les différentes manière de renommer les fichiers voulu, trois manière existantes
+    save = copie les fichiers dans un nouveau dossier en les renommant et garde l'ancien dossier avec les anciens fichiers
+    check = copie les fichiers dans un nouveau dossier en les renommant si le fichier est bien transféré et renommer supprimer l'ancien fichier et si l'ancien dossier est finalement vide le supprime également
+    rename = renomme les fichiers directement dans le même dossier
+
+    :param choice: Choix effectué par l'utilisateur sur la manière de renommer
+    :param rename: Nouveau nom donné au fichiers
+    :return: Le résultat d'une des trois méthode du renommage
+    """
+    img_template = lucidity.Template("rename_template", conf.rename_pattern, anchor=lucidity.Template.ANCHOR_END)
+
+    print("Je suis la")
 
     if rename.strip() == "":
         raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
@@ -23,13 +53,44 @@ def copy_before_save(rename):
 
     if folder_existing_not_empty:
         for img in conf.root_img_before.iterdir():
-            img = str(img)
-            template_data = img_template.parse(img)
+            template_data = img_template.parse(str(img))
             frame = template_data['frame']
 
-            rename_path = (conf.root_img_after / f"{rename}.{frame}.exr")
 
-            shutil.copy2(img, rename_path)
+            if choice == "save" or choice == "check":
+                rename_path = (conf.root_img_after / f"{rename}.{frame}.exr")
+
+                try:
+                    shutil.copy2(img, rename_path)
+
+                except Exception as exc:
+                    raise RenameFailure(f"Une erreur n'a pas pu permettre de copier {rename_path}: {exc}")
+
+                if choice == 'check':
+                    file_existing = check_existing(rename_path)
+
+                    if file_existing:
+                        img.unlink()
+
+                    if not list(conf.root_img_before.iterdir()):
+                        conf.root_img_before.rmdir()
+                    else:
+                        continue
+
+            elif choice == "rename":
+                rename_path = (conf.root_img_before / f"{rename}.{frame}.exr")
+
+                try:
+                    img.rename(rename_path)
+
+                except FileExistsError as exc:
+                    raise RenameFailure(f"Le fichier renommé {rename_path} existe déjà")
+
+                except Exception as exc:
+                    raise RenameFailure(f"Une erreur n'a pas pu renommer le fichier {img}: {exc}")
+
+            else:
+                raise RenameFailure("Erreur dans la procedure de renommage")
 
 
 def check_existing_not_empty(folder):
@@ -51,13 +112,26 @@ def check_existing_not_empty(folder):
         raise RenameFailure(f"Erreur: Le dossier dans lequel les fichiers sont n'a pas été trouvé. {folder}")
 
 
+def check_existing(file):
+    """
+    Fonction vérifiant que le fichier renommé soit bien existant dans le nouveau dossier
+
+    :param file: Fichier qui est en train d'être copié et renommé
+    :return: True si le fichier est bien existant, sinon raise une erreur pour indiquer que le fichier n'a pas été correctement copié
+    """
+    file_path = pl.Path(file)
+
+    if not file_path.is_file():
+
+        raise RenameFailure(f"Erreur: Le fichier {file} ne semble pas avoir été correctement copier dans le dossier")
+
+    else:
+        return True
+
+
 class RenameFailure(Exception):
     pass
 
 
 if __name__ == '__main__':
-    rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
-    print(copy_before_save(rename))
-
-    # folder = conf.root_img_before
-    # print(empty(folder))
+    print(function_choice())

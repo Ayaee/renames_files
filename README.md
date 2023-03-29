@@ -22,16 +22,12 @@ Pour que le script puisse fonctionner, il vous faudra le fichier 'conf.py, si le
 
 *Vérifier dans le fichier 'conf.py' le pattern utilisé pour créer le template et modifier le si besoin*
 
-#### Pour le moment je n'ai absolument pas le choix dans ma manière de rename mes fichiers
-
-*C'est normal pour le moment le projet est en création, il n'est possible que d'utiliser la fonction 'safe' qui copiera les fichiers dans un nouveau dossier et gardera l'ancien et le nouveau dossier avec les fichiers renommés*
-
 
 ## Features
 
-- Création de la fonction 'safe'
-- Création de la fonction 'fast'
-- Script lancable depuis une icone desktop
+- ~~Création de la fonction 'check'~~
+- ~~Création de la fonction 'rename'~~
+- Script lançable depuis une icone desktop
 - Création d'une UI
 - UI permettant de choisir le dossier d'entrée
 - UI permettant de choisir le dossier de sortie
