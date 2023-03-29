@@ -1,5 +1,6 @@
 import pathlib as pl
 
+
 root_img_before = pl.Path(__file__).resolve(strict=True).parent / "before"
 root_img_after = pl.Path(__file__).resolve(strict=True).parent / "after"
 
