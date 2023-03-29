@@ -1,1 +1,2 @@
-lucidity
+pathlib~=1.0.1
+Lucidity~=1.6.0
