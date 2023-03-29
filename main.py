@@ -8,7 +8,7 @@ import conf
 
 def function_choice():
     """
-    Fonction principale servant à demander à l'utilisateur la manière dont il veut réaliser son renommage de fichiers ainsi que le nom qu'il voudra donner
+    Fonction principale servant à demander à l'utilisateur la manière dont il veut réaliser son renommage de fichiers ainsi que le nom qu'il désirera donner
     La fonction appelle ensuite celle qui servira à réaliser le renommage
 
     :return: Le choix de l'utilisateur pour la procédure et le nouveau nom
