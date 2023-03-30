@@ -88,6 +88,12 @@ def rename_files(choice, rename):
 
 
 def get_data_pattern(img):
+    """
+    Fonction servant à créer le template à partir de la variable du pattern créer dans la 'conf.py' puis à récupérer la frame et l'extension du fichier
+
+    :param img: Fichier traité qui est en train de se faire renommer
+    :return: La frame et l'extension du fichier traité, ou raise une  erreur si le template n'est pas en adéquation avec le pattern créer
+    """
     img_template = lucidity.Template("rename_template", conf.rename_pattern, anchor=lucidity.Template.ANCHOR_END)
 
     try:
