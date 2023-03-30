@@ -27,6 +27,9 @@ def function_choice():
     else:
         rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
 
+    if rename.strip() == "":
+        raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
+
     rename_files(choice, rename)
 
 
@@ -41,23 +44,15 @@ def rename_files(choice, rename):
     :param rename: Nouveau nom donné au fichiers
     :return: Le résultat d'une des trois méthode du renommage
     """
-    img_template = lucidity.Template("rename_template", conf.rename_pattern, anchor=lucidity.Template.ANCHOR_END)
-
-    print("Je suis la")
-
-    if rename.strip() == "":
-        raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
-
     folder_existing_not_empty = check_existing_not_empty(conf.root_img_before)
 
     if folder_existing_not_empty:
         for img in conf.root_img_before.iterdir():
-            template_data = img_template.parse(str(img))
-            frame = template_data['frame']
+            frame, extension = get_data_pattern(img)
 
 
             if choice == "save" or choice == "check":
-                rename_path = (conf.root_img_after / f"{rename}.{frame}.exr")
+                rename_path = (conf.root_img_after / f"{rename}.{frame}.{extension}")
 
                 try:
                     shutil.copy2(img, rename_path)
@@ -77,7 +72,7 @@ def rename_files(choice, rename):
                         continue
 
             elif choice == "rename":
-                rename_path = (conf.root_img_before / f"{rename}.{frame}.exr")
+                rename_path = (conf.root_img_before / f"{rename}.{frame}.{extension}")
 
                 try:
                     img.rename(rename_path)
@@ -90,6 +85,20 @@ def rename_files(choice, rename):
 
             else:
                 raise RenameFailure("Erreur dans la procedure de renommage")
+
+
+def get_data_pattern(img):
+    img_template = lucidity.Template("rename_template", conf.rename_pattern, anchor=lucidity.Template.ANCHOR_END)
+
+    try:
+        template_data = img_template.parse(str(img))
+        frame = template_data['frame']
+        extension = template_data['extension']
+
+        return frame, extension
+
+    except lucidity.error.ParseError as exc:
+        raise RenameFailure(f"Le fichier {img} ne correspond pas au template pattern donné dans le fichier 'conf.py' veuillez le modifier")
 
 
 def check_existing_not_empty(folder):
