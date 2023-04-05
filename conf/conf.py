@@ -1,8 +1,8 @@
 import pathlib as pl
 
 
-root_img_before = pl.Path(__file__).resolve(strict=True).parent / "before"
-root_img_after = pl.Path(__file__).resolve(strict=True).parent / "after"
+root_img_before = pl.Path(__file__).resolve(strict=True).parent.parent / "before"
+root_img_after = pl.Path(__file__).resolve(strict=True).parent.parent / "after"
 
 rename_pattern = r"{name}.{version}.{frame}.{extension}"
 
