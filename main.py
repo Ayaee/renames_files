@@ -2,8 +2,7 @@ import pathlib as pl
 import lucidity
 import shutil
 
-
-import conf
+from conf import conf, templates
 
 
 def function_choice():
@@ -13,10 +12,10 @@ def function_choice():
 
     :return: Le choix de l'utilisateur pour la procédure et le nouveau nom
     """
-    choice = input("Comment voulez vous renomer vos fichier ? (Ecrivez votre choix\n"
-          "En faisant un  'save', en copiant les fichiers renommer dans un nouveau dossier et en conservant l'ancien ?\n"
-          "En faisant un 'check', en copiant les fichiers renommer dans un nouveau dossier et si le fichier est bien existant supprimer l'ancien, puis l'ancien dossier ?\n"
-          "En faisant un 'rename', en reonommant les fichiers directement dans le même dossier et écrasant les ancien ?\n")
+    choice = input("Comment voulez vous renommer vos fichier ? (Écrivez votre choix\n"
+                   "En faisant un 'save', en copiant les fichiers renommer dans un nouveau dossier et en conservant l'ancien ?\n"
+                   "En faisant un 'check', en copiant les fichiers renommer dans un nouveau dossier et si le fichier est bien existant supprimer l'ancien, puis l'ancien dossier ?\n"
+                   "En faisant un 'rename', en renommant les fichiers directement dans le même dossier et écrasant les ancien ?\n")
     print(choice)
 
     list_choice = ["save", "check", "rename"]
@@ -25,7 +24,7 @@ def function_choice():
         raise RenameFailure(f"Erreur: Le nom saisie ne correspond à aucun choix donné. Nom saisie : '{choice}'")
 
     else:
-        rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterlayer.0230.exr
+        rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterLayer.0230.exr
 
     if rename.strip() == "":
         raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
@@ -35,21 +34,20 @@ def function_choice():
 
 def rename_files(choice, rename):
     """
-    Fonction servant à réaliser les différentes manière de renommer les fichiers voulu, trois manière existantes
+    Fonction servant à réaliser les différentes manières de renommer les fichiers voulu, trois manières existantes
     save = copie les fichiers dans un nouveau dossier en les renommant et garde l'ancien dossier avec les anciens fichiers
-    check = copie les fichiers dans un nouveau dossier en les renommant si le fichier est bien transféré et renommer supprimer l'ancien fichier et si l'ancien dossier est finalement vide le supprime également
+    check = copie les fichiers dans un nouveau dossier en les renommant si le fichier est bien transféré et renommé, cela supprimer l'ancien fichier et si l'ancien dossier est finalement vide le supprime également
     rename = renomme les fichiers directement dans le même dossier
 
-    :param choice: Choix effectué par l'utilisateur sur la manière de renommer
-    :param rename: Nouveau nom donné au fichiers
-    :return: Le résultat d'une des trois méthode du renommage
+    :param choice : Choix effectué par l'utilisateur sur la manière de renommer
+    :param rename : Nouveau nom donné au fichier
+    :return: Le résultat d'une des trois méthodes du renommage
     """
     folder_existing_not_empty = check_existing_not_empty(conf.root_img_before)
 
     if folder_existing_not_empty:
         for img in conf.root_img_before.iterdir():
-            frame, extension = get_data_pattern(img)
-
+            frame, extension = get_data_template(img)
 
             if choice == "save" or choice == "check":
                 rename_path = (conf.root_img_after / f"{rename}.{frame}.{extension}")
@@ -87,24 +85,23 @@ def rename_files(choice, rename):
                 raise RenameFailure("Erreur dans la procedure de renommage")
 
 
-def get_data_pattern(img):
+def get_data_template(img):
     """
     Fonction servant à créer le template à partir de la variable du pattern créer dans la 'conf.py' puis à récupérer la frame et l'extension du fichier
 
-    :param img: Fichier traité qui est en train de se faire renommer
-    :return: La frame et l'extension du fichier traité, ou raise une  erreur si le template n'est pas en adéquation avec le pattern créer
+    :param img : Fichier traité qui est en train de se faire renommer
+    :return: La frame et l'extension du fichier traité, ou raise une erreur si le template n'est pas en adéquation avec les templates créer
     """
-    img_template = lucidity.Template("rename_template", conf.rename_pattern, anchor=lucidity.Template.ANCHOR_END)
-
     try:
-        template_data = img_template.parse(str(img))
+        template_data = lucidity.parse(str(img), templates.templates)
+        template_data = dict(template_data[0])
         frame = template_data['frame']
         extension = template_data['extension']
 
         return frame, extension
 
     except lucidity.error.ParseError as exc:
-        raise RenameFailure(f"Le fichier {img} ne correspond pas au template pattern donné dans le fichier 'conf.py' veuillez le modifier")
+        raise RenameFailure(f"Le fichier {img} ne correspond à aucun templates donné dans le fichier 'templates.py' veuillez le rajouter")
 
 
 def check_existing_not_empty(folder):
