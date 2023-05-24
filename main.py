@@ -7,24 +7,21 @@ from conf import conf, templates
 
 def function_choice():
     """
-    Fonction principale servant à demander à l'utilisateur la manière dont il veut réaliser son renommage de fichiers ainsi que le nom qu'il désirera donner
+    Fonction principale servant à demander à l'utilisateur s'il veut renommer ou copier les fichiers, ainsi que le nom qu'il souhaitera leur donner
     La fonction appelle ensuite celle qui servira à réaliser le renommage
 
     :return: Le choix de l'utilisateur pour la procédure et le nouveau nom
     """
-    choice = input("Comment voulez vous renommer vos fichier ? (Écrivez votre choix\n"
-                   "En faisant un 'save', en copiant les fichiers renommer dans un nouveau dossier et en conservant l'ancien ?\n"
-                   "En faisant un 'check', en copiant les fichiers renommer dans un nouveau dossier et si le fichier est bien existant supprimer l'ancien, puis l'ancien dossier ?\n"
-                   "En faisant un 'rename', en renommant les fichiers directement dans le même dossier et écrasant les ancien ?\n")
-    print(choice)
+    choice = input("Voulez vous directement 'rename' vos fichier dans le dossier existant ou alors les 'copy' dans un nouveau dossier pour les renommer ?\n"
+                   "Écrivez 'rename' ou 'copy' selon votre choix\n")
 
-    list_choice = ["save", "check", "rename"]
+    list_choice = ["copy", "rename"]
 
     if choice not in list_choice:
         raise RenameFailure(f"Erreur: Le nom saisie ne correspond à aucun choix donné. Nom saisie : '{choice}'")
 
     else:
-        rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")  # masterLayer.0230.exr
+        rename = input("Quel sera le nouveau nom de vos différentes frames ?\n")
 
     if rename.strip() == "":
         raise RenameFailure(f"Erreur: Le nom saisie est vide et ne contient aucun caractères. Nom saisie : '{rename}'")
@@ -34,22 +31,22 @@ def function_choice():
 
 def rename_files(choice, rename):
     """
-    Fonction servant à réaliser les différentes manières de renommer les fichiers voulu, trois manières existantes
-    save = copie les fichiers dans un nouveau dossier en les renommant et garde l'ancien dossier avec les anciens fichiers
-    check = copie les fichiers dans un nouveau dossier en les renommant si le fichier est bien transféré et renommé, cela supprimer l'ancien fichier et si l'ancien dossier est finalement vide le supprime également
+    Fonction servant à réaliser les différentes manières de renommer les fichiers voulu
+    copy = copie les fichiers dans un nouveau dossier en les renommant (possibilité d'effacer ou nom l'ancien dossier après vérification)
     rename = renomme les fichiers directement dans le même dossier
 
     :param choice : Choix effectué par l'utilisateur sur la manière de renommer
     :param rename : Nouveau nom donné au fichier
-    :return: Le résultat d'une des trois méthodes du renommage
+    :return: Les fichiers renommer selon la méthode choisit
     """
     folder_existing_not_empty = check_existing_not_empty(conf.root_img_before)
+    delete = function_delete(choice)
 
     if folder_existing_not_empty:
         for img in conf.root_img_before.iterdir():
             frame, extension = get_data_template(img)
 
-            if choice == "save" or choice == "check":
+            if choice == "copy":
                 rename_path = (conf.root_img_after / f"{rename}.{frame}.{extension}")
 
                 try:
@@ -58,7 +55,7 @@ def rename_files(choice, rename):
                 except Exception as exc:
                     raise RenameFailure(f"Une erreur n'a pas pu permettre de copier {rename_path}: {exc}")
 
-                if choice == 'check':
+                if delete == "yes":
                     file_existing = check_existing(rename_path)
 
                     if file_existing:
@@ -69,13 +66,16 @@ def rename_files(choice, rename):
                     else:
                         continue
 
+                else:
+                    continue
+
             elif choice == "rename":
                 rename_path = (conf.root_img_before / f"{rename}.{frame}.{extension}")
 
                 try:
                     img.rename(rename_path)
 
-                except FileExistsError as exc:
+                except FileExistsError:
                     raise RenameFailure(f"Le fichier renommé {rename_path} existe déjà")
 
                 except Exception as exc:
@@ -83,6 +83,26 @@ def rename_files(choice, rename):
 
             else:
                 raise RenameFailure("Erreur dans la procedure de renommage")
+
+
+def function_delete(choice):
+    """
+    Fonction servant à demander à l'utilisateur si préfère supprimer ou non l'ancien dossier
+    (Seulement quand celui-ci à choisie l'option 'copy')
+
+    :param choice: Choix effectué par l'utilisateur sur la manière de renommer
+    :return: Le choix effectué par l'utilisateur pour savoir s'il désire supprimer l'ancien dossier
+    """
+    if choice == "copy":
+        delete = input("Voulez vous supprimer l'ancien dossier ?\n"
+                       "Écrivez 'yes' ou 'no' selon votre choix\n")
+
+        list_delete = ["yes", "no"]
+
+        if delete not in list_delete:
+            raise RenameFailure(f"Erreur: Le mot saisie ne correspond à aucun des deux choix donnés. Nom saisie : '{delete}'")
+
+        return delete
 
 
 def get_data_template(img):
@@ -100,7 +120,7 @@ def get_data_template(img):
 
         return frame, extension
 
-    except lucidity.error.ParseError as exc:
+    except lucidity.error.ParseError:
         raise RenameFailure(f"Le fichier {img} ne correspond à aucun templates donné dans le fichier 'templates.py' veuillez le rajouter")
 
 
