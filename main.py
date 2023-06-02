@@ -52,6 +52,9 @@ def rename_files(choice, rename):
                 try:
                     shutil.copy2(img, rename_path)
 
+                except FileNotFoundError:
+                    raise RenameFailure(f"Le dossier {conf.root_img_after} dans lequel vous voulez copier les fichiers n'a pas été trouvé")
+
                 except Exception as exc:
                     raise RenameFailure(f"Une erreur n'a pas pu permettre de copier {rename_path}: {exc}")
 
@@ -134,13 +137,13 @@ def check_existing_not_empty(folder):
     if folder.exists() and not folder.is_file():
         if not list(folder.iterdir()):
 
-            raise RenameFailure("Erreur: Le dossier dans lequel vous cherchez est vide.")
+            raise RenameFailure(f"Erreur: Le dossier {folder} dans lequel vous cherchez est vide.")
 
         else:
             return True
 
     else:
-        raise RenameFailure(f"Erreur: Le dossier dans lequel les fichiers sont n'a pas été trouvé. {folder}")
+        raise RenameFailure(f"Erreur: Le dossier {folder} dans lequel les fichiers devraient être n'a pas été trouvé. ")
 
 
 def check_existing(file):
