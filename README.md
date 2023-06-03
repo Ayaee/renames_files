@@ -11,9 +11,9 @@ Pour que le script puisse fonctionner, il vous faudra le fichier 'conf.py, si le
 `root_img_before = pl.Path(__file__).resolve(strict=True).parent / "before"`
 `root_img_after = pl.Path(__file__).resolve(strict=True).parent / "after"`
 
-`rename_pattern = r"{name}.{version}.{frame}.exr"`
+`rename_pattern = r"{name}.{version}.{frame}.{extension}"`
 
-***Vérifier l'arborescence des path et le pattern utilisé et à les modifier si nécéssaire***
+***Vérifier l'arborescence des path et le pattern utilisé et à les modifier si nécessaire***
 
 
 ## FAQ
