@@ -3,9 +3,16 @@ import customtkinter as ctk
 ctk.set_appearance_mode("dark")
 
 
-class LabelTest(ctk.CTkFrame):
+class Choices(ctk.CTkFrame):
     def __init__(self, master, values):
         super().__init__(master)
+
+        self.choice = ctk.CTkLabel(self,
+                                   text="Voulez vous directement 'rename' vos fichier dans le dossier existant ou alors les 'copy' dans un nouveau dossier pour les renommer ?\n"
+                                        "Écrivez 'rename' ou 'copy' selon votre choix\n",
+                                   padx=10,
+                                   pady=10)
+        self.choice.grid(row=0, column=0, columnspan=len(values) + 1, padx=20)
 
         self.choice = ctk.CTkLabel(self,
                                    text="Voulez vous directement 'rename' vos fichier dans le dossier existant ou alors les 'copy' dans un nouveau dossier pour les renommer ?\n"
@@ -41,7 +48,7 @@ class ToolUI(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.title("Tool de renommage de fichiers")
 
-        self.label_test = LabelTest(master=self, values=["rename", "copy"])
+        self.label_test = Choices(master=self, values=["rename", "copy"])
         self.label_test.grid(row=0, column=0, padx=20, pady=20, sticky="nsw")
 
         self.button = ctk.CTkButton(self, text="my button", command=self.button_callback)
