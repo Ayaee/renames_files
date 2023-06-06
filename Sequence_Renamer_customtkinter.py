@@ -1,10 +1,8 @@
-import tkinter as tk
+import customtkinter as ctk
 import pathlib as pl
 import lucidity
 import shutil
 
-from tkinter import ttk, filedialog
-from ttkthemes import ThemedStyle
 from conf import templates
 
 
@@ -72,7 +70,7 @@ def rename_files(my_tab_view, selected_tab, name, accepted):
 
 def get_data_template(img):
     """
-    Fonction servant à créer le template à partir de la variable du pattern créer dans la 'conf.py' puis à récupérer la frame et l'extension du fichier
+    Fonction servant à créer le template à partir de la variable du pattern créer dans la 'old_conf.py' puis à récupérer la frame et l'extension du fichier
 
     :param img : Fichier traité qui est en train de se faire renommer
     :return: La frame et l'extension du fichier traité, ou raise une erreur si le template n'est pas en adéquation avec les templates créer
@@ -135,112 +133,112 @@ class RenameFailure(Exception):
 ##    UI    ##
 ##############
 
-class MyTabView(tk.Frame):
+class MyTabView(ctk.CTkTabview):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        self.checkbox_var = None
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill=tk.BOTH, expand=True)
-
         # create tabs
-        self.tab1 = tk.Frame(self.notebook)
-        self.tab2 = tk.Frame(self.notebook)
+        self.add("Rename")
+        self.add("Copy")
 
-        self.notebook.add(self.tab1, text="Rename")
-        self.notebook.add(self.tab2, text="Copy")
+        # add widgets on tabs
+        self.select_folder_source_rename = ctk.CTkButton(master=self.tab("Rename"),
+                                                  text="Choose the original folder containing the files",
+                                                  command=self.get_folder_source_rename,
+                                                  fg_color="#2D8664",
+                                                  hover_color="#194D2A")
+        self.select_folder_source_rename.place(relx=0.5, rely=0.3, anchor="center")
 
-        # Create browse button in both tabs
-        self.create_browse_button(self.tab1)
-        self.create_browse_button(self.tab2)
 
-        # Create checkbox in the "Copy" tab
-        self.create_copy_tab()
+        self.select_folder_source_copy = ctk.CTkButton(master=self.tab("Copy"),
+                                                       text="Choose the original folder containing the files",
+                                                       command=self.get_folder_source_copy,
+                                                       fg_color="#2D8664",
+                                                       hover_color="#194D2A")
+        self.select_folder_source_copy.place(relx=0.5, rely=0.3, anchor="center")
 
-    def create_browse_button(self, parent):
-        browse_button = tk.Button(parent, text="Choose the original folder containing the files",
-                                  command=self.get_browse_folder)
-        browse_button.pack(pady=10, padx=10)
+        self.select_folder_copy = ctk.CTkButton(master=self.tab("Copy"),
+                                                text="Choose the folder in which the files will be copied and renamed",
+                                                command=self.get_folder_copy,
+                                                fg_color="#2D8664",
+                                                hover_color="#194D2A")
+        self.select_folder_copy.place(relx=0.5, rely=0.5, anchor="center")
 
-    def get_browse_folder(self):
-        str_folder_source = filedialog.askdirectory()
+        self.checkbox_var = ctk.BooleanVar()
+        self.checkbox = ctk.CTkCheckBox(master=self.tab("Copy"),
+                                        text="Delete original folder",
+                                        variable=self.checkbox_var,
+                                        fg_color="#2D8664",
+                                        hover_color="#194D2A")
+        self.checkbox.place(relx=0.5, rely=0.7, anchor="center")
+
+    def get_folder_source_rename(self):
+        str_folder_source = ctk.filedialog.askdirectory()
         self.folder_source = pl.Path(str_folder_source).resolve()
-        print("Selected folder copy:", self.folder_source)
+        self.folder_copy = pl.Path(str_folder_source).resolve()
+        print("Selected folder source:", self.folder_source)
+        return self.folder_source, self.folder_copy
+
+    def get_folder_source_copy(self):
+        str_folder_source = ctk.filedialog.askdirectory()
+        self.folder_source = pl.Path(str_folder_source).resolve()
+        print("Selected folder source:", self.folder_source)
         return self.folder_source
 
-    def create_copy_tab(self):
-        copy_frame = self.tab2
-
-        # Create a button to select the folder copy
-        browse_button_copy = tk.Button(copy_frame, text="Choose the folder in which the files will be copied and renamed",
-                                       command=self.get_browse_folder_copy)
-        browse_button_copy.pack(pady=10, padx=10)
-
-        # Create a checkbox
-        self.checkbox_var = tk.BooleanVar()
-        checkbox = tk.Checkbutton(copy_frame, text="Delete original folder",
-                                  variable=self.checkbox_var)
-        checkbox.pack(pady=10)
-
-    def get_browse_folder_copy(self):
-        str_folder_copy = filedialog.askdirectory()
+    def get_folder_copy(self):
+        str_folder_copy = ctk.filedialog.askdirectory()
         self.folder_copy = pl.Path(str_folder_copy).resolve()
         print("Selected folder copy:", self.folder_copy)
         return self.folder_copy
 
-    def get_selected_tab(self):
-        current_tab = self.notebook.select()
-        tab_text = self.notebook.tab(current_tab, "text")
-        return tab_text
+    def get_checkbox_value(self):
+        return self.checkbox_var.get()
 
 
-class App(tk.Tk):
+class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("Sequence Renamer")
-        self.geometry("750x400")
+        self.geometry("700x570")
 
-        style = ThemedStyle(self)
-        style.set_theme("black")
+        ctk.set_appearance_mode("dark")
+        #ctk.set_default_color_theme("green")
 
-        # Create a container frame
-        container = tk.Frame(self)
-        container.pack(padx=20, pady=20)
+        self.label = ctk.CTkLabel(master=self,
+                                  text="Write the new name you want to assign to the files")
+        self.label.place(relx=0.5, rely=0.1, anchor="center")
 
-        # Create a label
-        label = tk.Label(container,
-                         text="Write the new name you want to assign to the files")
-        label.pack(pady=10)
+        self.name_entry = ctk.CTkEntry(master=self)
+        self.name_entry.place(relx=0.5, rely=0.17, anchor="center")
 
-        # Create an entry for capturing user's name
-        self.name_entry = tk.Entry(
-            container)  # Utilisation de self pour rendre la variable accessible à toute la classe
-        self.name_entry.pack(pady=10)
+        self.label_top = ctk.CTkLabel(master=self,
+                                      text="Do you want to rename the original files or save them and rename a copy of the files")
+        self.label_top.place(relx=0.5, rely=0.31, anchor="center")
 
-        # Create a label
-        label = tk.Label(container,
-                         text="Do you want to rename the original files or save them and rename a copy of the files?")
-        label.pack(pady=10)
+        self.tab_view = MyTabView(master=self,
+                                  segmented_button_selected_color="#2D8664",
+                                  segmented_button_selected_hover_color="#194D2A")
+        self.tab_view.place(relheight=0.4, relwidth=0.8, relx=0.5, rely=0.55, anchor="center")
 
-        # Create MyTabView
-        self.tab_view = MyTabView(container)
-        self.tab_view.pack()
-
-        self.button = tk.Button(self, text="Execute", command=self.button_callback)
-        self.button.pack(padx=10, pady=10)
-
-        # Initialize selected_folder attribute
-        self.selected_folder = None
+        self.button = ctk.CTkButton(self,
+                                    text="Execute",
+                                    command=self.button_callback,
+                                    fg_color="#2D8664",
+                                    hover_color="#194D2A")
+        self.button.place(relx=0.5, rely=0.82, anchor="center")
 
     def button_callback(self):
-        selected_tab = self.tab_view.get_selected_tab()
-        name = self.name_entry.get()  # Utilisation de self pour accéder à la variable name_entry
-        accepted = self.tab_view.checkbox_var.get()  # Utilisation de la variable de la tab view
-        print("Selected tab:", selected_tab)
+        name = self.name_entry.get()
+        selected_tab = self.tab_view.get()
+        accepted = self.tab_view.get_checkbox_value()
         print("Name:", name)
+        print("Selected tab:", selected_tab)
         print("Accepted:", accepted)
-        rename_files(self.tab_view, selected_tab, name, accepted)
+        if self.tab_view.folder_copy is None:
+            rename_files(self.tab_view, selected_tab, name, accepted)
+        else:
+            rename_files(self.tab_view, selected_tab, name, accepted)
 
 
 app = App()

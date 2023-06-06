@@ -2,7 +2,8 @@ import pathlib as pl
 import lucidity
 import shutil
 
-from conf import conf, templates
+from old_conf import templates
+from divers import old_conf
 
 
 def function_choice():
@@ -64,7 +65,7 @@ def rename_files(choice, rename):
                     if file_existing:
                         img.unlink()
 
-                    if not list(conf.root_img_before.iterdir()):
+                    if not list(old_conf.root_img_before.iterdir()):
                         conf.root_img_before.rmdir()
                     else:
                         continue
@@ -110,7 +111,7 @@ def function_delete(choice):
 
 def get_data_template(img):
     """
-    Fonction servant à créer le template à partir de la variable du pattern créer dans la 'conf.py' puis à récupérer la frame et l'extension du fichier
+    Fonction servant à créer le template à partir de la variable du pattern créer dans la 'old_conf.py' puis à récupérer la frame et l'extension du fichier
 
     :param img : Fichier traité qui est en train de se faire renommer
     :return: La frame et l'extension du fichier traité, ou raise une erreur si le template n'est pas en adéquation avec les templates créer
