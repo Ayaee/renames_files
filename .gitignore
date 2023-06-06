@@ -154,4 +154,3 @@ cython_debug/
 # User Add
 after/
 before/
-test.py

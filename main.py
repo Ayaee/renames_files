@@ -163,23 +163,6 @@ def check_existing(file):
         return True
 
 
-def check_existing(file):
-    """
-    Fonction vérifiant que le fichier renommé soit bien existant dans le nouveau dossier
-
-    :param file: Fichier qui est en train d'être copié et renommé
-    :return: True si le fichier est bien existant, sinon raise une erreur pour indiquer que le fichier n'a pas été correctement copié
-    """
-    file_path = pl.Path(file)
-
-    if not file_path.is_file():
-
-        raise RenameFailure(f"Erreur: Le fichier {file} ne semble pas avoir été correctement copier dans le dossier")
-
-    else:
-        return True
-
-
 class RenameFailure(Exception):
     pass
 
