@@ -8,5 +8,5 @@ rename_pattern = r"{name}.{version}.{frame}.{extension}"
 
 
 if __name__ == '__main__':
-    print(root_img_before)
+    print(type(root_img_before))
     print(root_img_after)
